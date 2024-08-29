@@ -1,22 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const ScriptReader = () => {
   const [script, setScript] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
-  const [utterance, setUtterance] = useState(null);
-
-  useEffect(() => {
-    const synth = window.speechSynthesis;
-    const u = new SpeechSynthesisUtterance();
-    setUtterance(u);
-
-    return () => {
-      synth.cancel();
-    };
-  }, []);
 
   const processScript = (text) => {
     const lines = text.split('\n');
@@ -36,31 +22,31 @@ const ScriptReader = () => {
     const processedScript = processScript(script);
 
     processedScript.forEach((line, index) => {
-      const u = new SpeechSynthesisUtterance(line.text);
+      const utterance = new SpeechSynthesisUtterance(line.text);
 
       switch (line.type) {
         case 'character':
-          u.pitch = 1.2;
-          u.rate = 0.9;
+          utterance.pitch = 1.2;
+          utterance.rate = 0.9;
           break;
         case 'action':
-          u.pitch = 0.8;
-          u.rate = 0.8;
+          utterance.pitch = 0.8;
+          utterance.rate = 0.8;
           break;
         case 'dialogue':
-          u.pitch = 1;
-          u.rate = 1;
+          utterance.pitch = 1;
+          utterance.rate = 1;
           break;
       }
 
       if (index === 0) {
-        u.onstart = () => setIsPlaying(true);
+        utterance.onstart = () => setIsPlaying(true);
       }
       if (index === processedScript.length - 1) {
-        u.onend = () => setIsPlaying(false);
+        utterance.onend = () => setIsPlaying(false);
       }
 
-      synth.speak(u);
+      synth.speak(utterance);
     });
   };
 
@@ -71,27 +57,31 @@ const ScriptReader = () => {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Script Reader MVP</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Textarea
-          value={script}
-          onChange={(e) => setScript(e.target.value)}
-          placeholder="Paste your script here..."
-          className="w-full h-64 mb-4"
-        />
-        <div className="flex justify-center space-x-4">
-          <Button onClick={speak} disabled={isPlaying || !script}>
-            {isPlaying ? 'Playing...' : 'Play Script'}
-          </Button>
-          <Button onClick={stopSpeaking} disabled={!isPlaying}>
-            Stop
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Script Reader MVP</h1>
+      <textarea
+        value={script}
+        onChange={(e) => setScript(e.target.value)}
+        placeholder="Paste your script here..."
+        className="w-full h-64 p-2 border rounded mb-4"
+      />
+      <div className="flex justify-center space-x-4">
+        <button
+          onClick={speak}
+          disabled={isPlaying || !script}
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+        >
+          {isPlaying ? 'Playing...' : 'Play Script'}
+        </button>
+        <button
+          onClick={stopSpeaking}
+          disabled={!isPlaying}
+          className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-300"
+        >
+          Stop
+        </button>
+      </div>
+    </div>
   );
 };
 
